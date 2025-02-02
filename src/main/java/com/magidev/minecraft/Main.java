@@ -10,16 +10,17 @@ import java.io.InputStream;
 public class Main
 {
     private static Minecraft mc;
+    private static Window window;
 
     public static void main(String[] args)
     {
         /*-----------------------------------------Window---------------------------------------------*/
-        Window window = new Window(Config.NAME, 1280, 720, false);
+        window = new Window(Config.NAME, 1280, 720, false);
         window.init();
 
         /*-----------------------------------------Icons---------------------------------------------*/
-        InputStream icon16 = Utils.getResource("/assets/minecraft/icons/icon_16x16.png");
-        InputStream icon32 = Utils.getResource("/assets/minecraft/icons/icon_32x32.png");
+        InputStream icon16 = Utils.getResource("icons/icon_16x16.png");
+        InputStream icon32 = Utils.getResource("icons/icon_32x32.png");
         /*-------------------------------------------------------------------------------------------*/
 
         window.setIcon(icon16, icon32);
@@ -31,12 +32,10 @@ public class Main
         gameLoop(mc, window);
     }
 
+
     private static void gameLoop(GameLogic game, Window window)
     {
-        final double TICK_RATE = 1.0 / 20.0; // 20 ticks par seconde
-        double lastTime = System.nanoTime() / 1000000000.0;
-        double accumulator = 0.0;
-
+        double lastTime = System.nanoTime() / 1_000_000_000.0;
         int frames = 0;
         double fpsTimer = 0.0;
 
@@ -44,14 +43,12 @@ public class Main
         {
             Utils.updateViewportIfNeeded(window);
 
-            double currentTime = System.nanoTime() / 1000000000.0;
-            double frameTime = currentTime - lastTime;
+            double currentTime = System.nanoTime() / 1_000_000_000.0;
+            double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
 
-            accumulator += frameTime;
-
             frames++;
-            fpsTimer += frameTime;
+            fpsTimer += deltaTime;
 
             // Affiche les FPS dans le titre de la fenêtre toutes les secondes
             if (fpsTimer >= 1.0)
@@ -59,19 +56,14 @@ public class Main
                 int fps = frames;
                 frames = 0;
                 fpsTimer = 0.0;
-
                 window.setTitle(Config.NAME + " | FPS: " + fps);
             }
 
-            // Traitement des ticks fixes
-            while (accumulator >= TICK_RATE)
-            {
-                game.input(TICK_RATE);   // Passe le temps fixe à la logique d'entrée
-                game.update(TICK_RATE); // Mets à jour la logique du jeu avec le temps fixe
-                accumulator -= TICK_RATE;
-            }
+            // Mise à jour du jeu avec deltaTime
+            game.input(deltaTime);   // Passe deltaTime à la logique d'entrée
+            game.update(deltaTime); // Mets à jour la logique du jeu avec deltaTime
 
-            // Rendu graphique (interpolation possible pour plus de fluidité)
+            // Rendu graphique
             game.render();
 
             // Mise à jour de la fenêtre
@@ -80,5 +72,10 @@ public class Main
 
         game.cleanup();
         window.close();
+    }
+
+    public static Window getWindow()
+    {
+        return window;
     }
 }

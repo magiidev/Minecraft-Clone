@@ -301,4 +301,9 @@ public class Window
 
         return h.get(0);
     }
+
+    public long getWindowHandle()
+    {
+        return window;
+    }
 }

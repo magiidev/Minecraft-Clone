@@ -34,6 +34,8 @@ public class Texture
             ByteBuffer imageDataBuffer = ByteBuffer.allocateDirect(imageBytes.length).put(imageBytes);
             imageDataBuffer.flip();
 
+            STBImage.stbi_set_flip_vertically_on_load(true);
+
             ByteBuffer imageData = STBImage.stbi_load_from_memory(imageDataBuffer, widthBuffer, heightBuffer, channelsBuffer, 4);
             if (imageData == null)
                 throw new RuntimeException("Error when loading the texture : " + STBImage.stbi_failure_reason());

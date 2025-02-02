@@ -11,6 +11,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 import static org.lwjgl.opengl.GL40.glViewport;
@@ -39,6 +41,20 @@ public class Utils
         }
     }
 
+    public static boolean fileExists(String path) {
+        // Vérification depuis le système de fichiers
+        if (Files.exists(Paths.get(path))) {
+            return true;
+        }
+
+        // Vérification dans le classpath (pour les fichiers dans le JAR)
+        try (InputStream is = Utils.class.getClassLoader().getResourceAsStream(path)) {
+            return is != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static String loadShaderSource(String fileName) {
         try (InputStream is = Utils.class.getResourceAsStream("/assets/minecraft/shaders/" + fileName)) {
             if (is == null) {
@@ -53,7 +69,7 @@ public class Utils
 
     public static InputStream getResource(String filePath)
     {
-        return Utils.class.getResourceAsStream(filePath);
+        return Utils.class.getResourceAsStream("/assets/minecraft/" + filePath);
     }
 
     public static ByteBuffer readToBuffer(InputStream inputStreamIn) throws IOException

@@ -1,16 +1,18 @@
 package com.magidev.minecraft.engine.rendering.shaders;
 
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ShaderProgram {
+public abstract class Shader {
     private final int programId;
     private final Map<String, Integer> uniforms;
 
-    public ShaderProgram() {
+    public Shader() {
         programId = GL20.glCreateProgram();
         if (programId == 0) {
             throw new RuntimeException("Impossible de créer un programme shader");
@@ -72,8 +74,25 @@ public class ShaderProgram {
         GL20.glUniform3f(uniforms.get(uniformName), x, y, z);
     }
 
+    public void setUniform(String uniformName, Matrix4f matrix) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(16);
+            matrix.get(buffer);
+            GL20.glUniformMatrix4fv(uniforms.get(uniformName), false, buffer);
+        }
+    }
+
+    public void setUniform(String uniformName, boolean value) {
+        GL20.glUniform1i(uniforms.get(uniformName), value ? 1 : 0);
+    }
+
+    public abstract void createUniforms();
+    public abstract void setUniforms();
+
     public void bind() {
+        createUniforms();
         GL20.glUseProgram(programId);
+        setUniforms();
     }
 
     public void unbind() {
